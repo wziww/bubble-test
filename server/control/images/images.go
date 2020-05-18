@@ -21,10 +21,3 @@ func Search() httprouter.Handle {
 		lib.Send(200, res, req, docker.ImagesSearch(req.Context()))
 	}
 }
-
-// Pull ...
-func Pull() httprouter.Handle {
-	return func(res http.ResponseWriter, req *http.Request, params httprouter.Params) {
-		lib.Send(200, res, req, docker.ImagesPull(req.Context(), req.URL.Query().Get("image")))
-	}
-}

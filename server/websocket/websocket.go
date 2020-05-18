@@ -69,17 +69,35 @@ func (c *clientWS) decode(mt int, message []byte) bool {
 	case websocket.TextMessage:
 		data := make(userMessage)
 		json.Unmarshal(message, &data)
-		resp := docker.ImagesPull(context.Background(), "docker.io/prom/alertmanager:latest")
-		if resp != nil {
-			io.Copy(c, resp)
+		if !handle(data, c) {
+			return false
 		}
-		c.write(websocket.TextMessage, []byte(`{code:200,message:"success"}`))
 	case websocket.BinaryMessage:
 	case websocket.CloseMessage:
 	case websocket.PingMessage:
 	case websocket.PongMessage:
 	default:
 		return false
+	}
+	return true
+}
+
+func handle(data map[string]string, c *clientWS) bool {
+	method := data["method"]
+	if method == "" {
+		return false
+	}
+	if method == "images/pull" {
+		resp, err := docker.ImagesPull(context.Background(), data["image"])
+		if err != nil {
+			c.write(websocket.TextMessage, []byte(err.Error()))
+			c.write(websocket.TextMessage, []byte(`{code:400,message:"failed"}`))
+			return false
+		}
+		if resp != nil {
+			io.Copy(c, resp)
+		}
+		c.write(websocket.TextMessage, []byte(`{code:200,message:"success"}`))
 	}
 	return true
 }

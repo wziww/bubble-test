@@ -2,11 +2,17 @@ package docker
 
 import (
 	"context"
+	"errors"
 	"io"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/registry"
 	"github.com/sirupsen/logrus"
+)
+
+var (
+	// ErrNoClient ...
+	ErrNoClient = errors.New("Cant get client")
 )
 
 // ImagesGet ...
@@ -40,16 +46,16 @@ func ImagesSearch(ctx context.Context) []registry.SearchResult {
 }
 
 // ImagesPull ...
-func ImagesPull(ctx context.Context, imageName string) io.ReadCloser {
+func ImagesPull(ctx context.Context, imageName string) (io.ReadCloser, error) {
 	client := New()
 	if client != nil {
 		defer release(client)
 		resp, err := client.ImagePull(ctx, imageName, types.ImagePullOptions{})
 		if err != nil {
 			logrus.Errorln(err)
-			return nil
+			return nil, err
 		}
-		return resp
+		return resp, nil
 	}
-	return nil
+	return nil, ErrNoClient
 }

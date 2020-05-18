@@ -8,8 +8,8 @@ import (
 
 func routerSet() *httprouter.Router {
 	router := httprouter.New()
+	router.GET("/ws", websocket.Upgrade)
 	router.GET("/images/list", images.GetALL())
 	router.GET("/images/search", images.Search())
-	router.GET("/ws", websocket.Upgrade)
 	return router
 }
