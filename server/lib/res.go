@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 var (
@@ -26,7 +26,7 @@ func Send(code int, w http.ResponseWriter, req *http.Request, v interface{}) {
 			if err.Error() == "http: connection has been hijacked" {
 				return
 			}
-			log.Errorln(err)
+			logrus.Errorln(err)
 		}
 	}
 }

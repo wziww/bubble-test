@@ -3,11 +3,10 @@ package docker
 import (
 	"context"
 	"io"
-	"os"
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/registry"
-	log "github.com/sirupsen/logrus"
+	"github.com/sirupsen/logrus"
 )
 
 // ImagesGet ...
@@ -17,7 +16,7 @@ func ImagesGet(ctx context.Context) []types.ImageSummary {
 		defer release(client)
 		images, err := client.ImageList(ctx, types.ImageListOptions{})
 		if err != nil {
-			log.Errorln(err)
+			logrus.Errorln(err)
 		}
 		return images
 	}
@@ -33,7 +32,7 @@ func ImagesSearch(ctx context.Context) []registry.SearchResult {
 			Limit: 10,
 		})
 		if err != nil {
-			log.Errorln(err)
+			logrus.Errorln(err)
 		}
 		return images
 	}
@@ -41,17 +40,16 @@ func ImagesSearch(ctx context.Context) []registry.SearchResult {
 }
 
 // ImagesPull ...
-func ImagesPull(ctx context.Context, imageName string) string {
+func ImagesPull(ctx context.Context, imageName string) io.ReadCloser {
 	client := New()
 	if client != nil {
 		defer release(client)
 		resp, err := client.ImagePull(ctx, imageName, types.ImagePullOptions{})
 		if err != nil {
-			log.Errorln(err)
-			return "failed"
+			logrus.Errorln(err)
+			return nil
 		}
-		io.Copy(os.Stdout, resp)
-		return "success"
+		return resp
 	}
-	return "failed"
+	return nil
 }
