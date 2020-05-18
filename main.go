@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"os"
 
 	"github.com/sirupsen/logrus"
@@ -34,8 +33,6 @@ func main() {
 	log.SetOutput(os.Stdout)
 	log.SetLevel(log.DebugLevel)
 	app.Action = func(c *cli.Context) error {
-		fmt.Println(c.String("config"))
-		fmt.Println(c.String("c"))
 		return server.Run(c)
 	}
 	err := app.Run(os.Args)

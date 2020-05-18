@@ -4,12 +4,20 @@ import (
 	"log"
 	"os"
 	"sync"
+
+	"github.com/BurntSushi/toml"
 )
 
 // Config bubble-test config
 type Config struct {
 	init   bool
 	Docker Docker `toml:"docker"`
+	Server Server `toml:"server"`
+}
+
+// Server bubble-test config
+type Server struct {
+	Host string `toml:"host"`
 }
 
 // Docker config set to connect to docker
@@ -31,11 +39,12 @@ func setDefaultConfig(c *Config) {
 	if c.Docker.APIVersion == "" {
 		c.Docker.APIVersion = DefaultAPIVersion
 	}
+	if c.Server.Host == "" {
+		c.Server.Host = "0.0.0.0:8080"
+	}
 }
 
 func getDefaultConfig() *Config {
-	mutex.Lock()
-	defer mutex.Unlock()
 	if cfg.init {
 		return &cfg
 	}
@@ -46,19 +55,31 @@ func getDefaultConfig() *Config {
 	return c
 }
 
+// Get ...
+func Get() *Config {
+	return &cfg
+}
+
 // LoadConfig ...
-func LoadConfig(file string) *Config {
+func LoadConfig(file string) (*Config, error) {
 	mutex.Lock()
 	defer mutex.Unlock()
 	if cfg.init {
-		return &cfg
+		return &cfg, nil
 	}
+	cfg = Config{}
 	_, err := os.Stat(file)
 	if err != nil {
 		if os.IsNotExist(err) {
 			log.Fatal(err)
-			return nil
+			return nil, err
 		}
 	}
-	return nil
+	if _, err = toml.DecodeFile(file, &cfg); err != nil {
+		log.Fatal(err)
+		return nil, err
+	}
+	setDefaultConfig(&cfg)
+	cfg.init = true
+	return &cfg, nil
 }
