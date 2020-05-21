@@ -1,28 +1,54 @@
 package websocket
 
 import (
-	"context"
 	"encoding/json"
-	"io"
 	"net/http"
 	"sync"
 
 	"github.com/sirupsen/logrus"
-	"github.com/wziww/bubble-test/common/docker"
 
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
 )
 
-var upgrader = websocket.Upgrader{
-	CheckOrigin: func(r *http.Request) bool { return true },
-} // use default options
-type clientWS struct {
+type router struct {
+	lock sync.Mutex
+
+	m map[string]RouterConfig
+}
+
+// RouterConfig 路由配置
+type RouterConfig struct {
+	Path string
+	Func func(*ClientWS, map[string]string) bool
+}
+
+// ClientWS ...
+type ClientWS struct {
 	*websocket.Conn
 	rw sync.Mutex
 }
 
-func (c *clientWS) write(messageType int, data []byte) error {
+var (
+	r        router
+	upgrader = websocket.Upgrader{
+		CheckOrigin: func(r *http.Request) bool { return true },
+	} // use default options
+)
+
+// Registry 路由注册
+func Registry(cfg RouterConfig) {
+	r.lock.Lock()
+	defer r.lock.Unlock()
+}
+
+func init() {
+	r = router{
+		m: make(map[string]RouterConfig),
+	}
+}
+
+func (c *ClientWS) write(messageType int, data []byte) error {
 	c.rw.Lock()
 	defer c.rw.Unlock()
 	err := c.WriteMessage(messageType, data)
@@ -34,7 +60,7 @@ func (c *clientWS) write(messageType int, data []byte) error {
 }
 
 // Write(p []byte) (n int, err error)
-func (c *clientWS) Write(data []byte) (n int, err error) {
+func (c *ClientWS) Write(data []byte) (n int, err error) {
 	err = c.write(websocket.TextMessage, data)
 	return len(data), err
 }
@@ -47,7 +73,7 @@ func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 		return
 	}
 	defer c.Close()
-	client := clientWS{
+	client := ClientWS{
 		Conn: c,
 	}
 	for {
@@ -64,7 +90,7 @@ func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 
 type userMessage map[string]string
 
-func (c *clientWS) decode(mt int, message []byte) bool {
+func (c *ClientWS) decode(mt int, message []byte) bool {
 	switch mt {
 	case websocket.TextMessage:
 		data := make(userMessage)
@@ -82,22 +108,9 @@ func (c *clientWS) decode(mt int, message []byte) bool {
 	return true
 }
 
-func handle(data map[string]string, c *clientWS) bool {
-	method := data["method"]
-	if method == "" {
-		return false
+func handle(data map[string]string, c *ClientWS) bool {
+	if f, ok := r.m["method"]; ok {
+		return f.Func(c, data)
 	}
-	if method == "images/pull" {
-		resp, err := docker.ImagesPull(context.Background(), data["image"])
-		if err != nil {
-			c.write(websocket.TextMessage, []byte(err.Error()))
-			c.write(websocket.TextMessage, []byte(`{code:400,message:"failed"}`))
-			return false
-		}
-		if resp != nil {
-			io.Copy(c, resp)
-		}
-		c.write(websocket.TextMessage, []byte(`{code:200,message:"success"}`))
-	}
-	return true
+	return false
 }

@@ -15,5 +15,6 @@ require (
 	github.com/pkg/errors v0.9.1 // indirect
 	github.com/sirupsen/logrus v1.6.0
 	github.com/urfave/cli v1.22.4
+	go.uber.org/zap v1.15.0
 	golang.org/x/net v0.0.0-20200513185701-a91f0712d120 // indirect
 )
