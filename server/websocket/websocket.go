@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"sync"
 
-	"github.com/sirupsen/logrus"
+	"github.com/wziww/bubble-test/common/logger"
 
 	"github.com/gorilla/websocket"
 	"github.com/julienschmidt/httprouter"
@@ -53,7 +53,7 @@ func (c *ClientWS) write(messageType int, data []byte) error {
 	defer c.rw.Unlock()
 	err := c.WriteMessage(messageType, data)
 	if err != nil {
-		logrus.Println("write:", err)
+		logger.Error("write:" + err.Error())
 		return err
 	}
 	return nil
@@ -69,7 +69,7 @@ func (c *ClientWS) Write(data []byte) (n int, err error) {
 func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	c, err := upgrader.Upgrade(w, r, nil)
 	if err != nil {
-		logrus.Print("upgrade:", err)
+		logger.Error("upgrade:" + err.Error())
 		return
 	}
 	defer c.Close()
@@ -79,7 +79,7 @@ func Upgrade(w http.ResponseWriter, r *http.Request, ps httprouter.Params) {
 	for {
 		mt, message, err := client.ReadMessage()
 		if err != nil {
-			logrus.Println("read:", err)
+			logger.Error("read:" + err.Error())
 			break
 		}
 		if !client.decode(mt, message) {

@@ -4,8 +4,8 @@ import (
 	"context"
 	"io"
 
-	"github.com/sirupsen/logrus"
 	"github.com/wziww/bubble-test/common/docker"
+	"github.com/wziww/bubble-test/common/logger"
 	"github.com/wziww/bubble-test/server/websocket"
 )
 
@@ -19,7 +19,7 @@ func pull(c *websocket.ClientWS, data map[string]string) bool {
 	if resp != nil {
 		_, e := io.Copy(c, resp)
 		if e != nil {
-			logrus.Errorln(e)
+			logger.Error(e.Error())
 			return false
 
 		}

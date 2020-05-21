@@ -2,8 +2,8 @@ package docker
 
 import (
 	"github.com/docker/docker/client"
-	"github.com/sirupsen/logrus"
 	"github.com/wziww/bubble-test/common/config"
+	"github.com/wziww/bubble-test/common/logger"
 )
 
 // New ...
@@ -11,7 +11,7 @@ func New() *client.Client {
 	cfg := config.Get()
 	c, err := client.NewClient(cfg.Docker.Host, config.DefaultAPIVersion, nil, nil)
 	if err != nil {
-		logrus.Errorln(err)
+		logger.Error(err.Error())
 		return nil
 	}
 	return c

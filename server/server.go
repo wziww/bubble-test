@@ -4,16 +4,16 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/sirupsen/logrus"
 	"github.com/urfave/cli"
 	"github.com/wziww/bubble-test/common/config"
+	"github.com/wziww/bubble-test/common/logger"
 )
 
 // Run ...
 func Run(c *cli.Context) error {
 	cfg, err := config.LoadConfig(c.String("config"))
 	if err != nil {
-		logrus.Fatal(err)
+		logger.Error(err.Error())
 		panic(err)
 	}
 	Server := &http.Server{
@@ -22,11 +22,11 @@ func Run(c *cli.Context) error {
 		WriteTimeout: 60 * time.Second,
 		ReadTimeout:  60 * time.Second,
 	}
-	logrus.Infoln("bubble-test listening at " + cfg.Server.Host + "")
+	logger.Info("bubble-test listening at " + cfg.Server.Host + "")
 	err = Server.ListenAndServe()
 	if err != nil {
 		if err == http.ErrServerClosed {
-			logrus.Debugln(err)
+			logger.Debug(err.Error())
 			select {
 			case <-time.After(60 * time.Second):
 				panic(err)

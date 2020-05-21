@@ -5,7 +5,7 @@ import (
 	"net/http"
 	"strconv"
 
-	"github.com/sirupsen/logrus"
+	"github.com/wziww/bubble-test/common/logger"
 )
 
 var (
@@ -26,7 +26,7 @@ func Send(code int, w http.ResponseWriter, req *http.Request, v interface{}) {
 			if err.Error() == "http: connection has been hijacked" {
 				return
 			}
-			logrus.Errorln(err)
+			logger.Error(err.Error())
 		}
 	}
 }

@@ -7,7 +7,7 @@ import (
 
 	"github.com/docker/docker/api/types"
 	"github.com/docker/docker/api/types/registry"
-	"github.com/sirupsen/logrus"
+	"github.com/wziww/bubble-test/common/logger"
 )
 
 var (
@@ -22,7 +22,7 @@ func ImagesGet(ctx context.Context) []types.ImageSummary {
 		defer release(client)
 		images, err := client.ImageList(ctx, types.ImageListOptions{})
 		if err != nil {
-			logrus.Errorln(err)
+			logger.Error(err.Error())
 		}
 		return images
 	}
@@ -38,7 +38,7 @@ func ImagesSearch(ctx context.Context) []registry.SearchResult {
 			Limit: 10,
 		})
 		if err != nil {
-			logrus.Errorln(err)
+			logger.Error(err.Error())
 		}
 		return images
 	}
@@ -52,7 +52,7 @@ func ImagesPull(ctx context.Context, imageName string) (io.ReadCloser, error) {
 		defer release(client)
 		resp, err := client.ImagePull(ctx, imageName, types.ImagePullOptions{})
 		if err != nil {
-			logrus.Errorln(err)
+			logger.Error(err.Error())
 			return nil, err
 		}
 		return resp, nil
