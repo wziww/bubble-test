@@ -10,7 +10,7 @@ import (
 )
 
 func pull(c *websocket.ClientWS, data map[string]string) bool {
-	resp, err := docker.ImagesPull(context.Background(), data["image"])
+	resp, err := docker.Pull(context.Background(), data["image"])
 	if err != nil {
 		c.Write([]byte(err.Error()))
 		c.Write([]byte(`{code:400,message:"failed"}`))

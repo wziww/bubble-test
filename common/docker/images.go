@@ -15,8 +15,8 @@ var (
 	ErrNoClient = errors.New("Cant get client")
 )
 
-// ImagesGet ...
-func ImagesGet(ctx context.Context) []types.ImageSummary {
+// List ...
+func List(ctx context.Context) []types.ImageSummary {
 	client := New()
 	if client != nil {
 		defer release(client)
@@ -29,8 +29,8 @@ func ImagesGet(ctx context.Context) []types.ImageSummary {
 	return nil
 }
 
-// ImagesSearch ...
-func ImagesSearch(ctx context.Context) []registry.SearchResult {
+// Search ...
+func Search(ctx context.Context) []registry.SearchResult {
 	client := New()
 	if client != nil {
 		defer release(client)
@@ -45,8 +45,8 @@ func ImagesSearch(ctx context.Context) []registry.SearchResult {
 	return nil
 }
 
-// ImagesPull ...
-func ImagesPull(ctx context.Context, imageName string) (io.ReadCloser, error) {
+// Pull ...
+func Pull(ctx context.Context, imageName string) (io.ReadCloser, error) {
 	client := New()
 	if client != nil {
 		defer release(client)
